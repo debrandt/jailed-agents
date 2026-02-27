@@ -77,11 +77,12 @@ Run `nix develop`, and the `jailed-opencode` command will be available in your s
 
 `jailed-agents` provides pre-configured builders for the following agents:
 
-| Agent      | Builder Function     | Default Command   |
-| ---------- | -------------------- | ----------------- |
-| `crush`    | `makeJailedCrush`    | `jailed-crush`    |
-| `gemini-cli`| `makeJailedGeminiCli`| `jailed-gemini-cli`|
-| `opencode` | `makeJailedOpencode` | `jailed-opencode` |
+| Agent        | Builder Function       | Default Command     |
+| ------------ | ---------------------- | ------------------- |
+| `claude-code`| `makeJailedClaudeCode` | `jailed-claude-code`|
+| `crush`      | `makeJailedCrush`      | `jailed-crush`      |
+| `gemini-cli` | `makeJailedGeminiCli`  | `jailed-gemini-cli` |
+| `opencode`   | `makeJailedOpencode`   | `jailed-opencode`   |
 
 These builders come with sensible defaults and include the necessary config paths for the agent to function correctly out of the box.
 

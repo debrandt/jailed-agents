@@ -150,15 +150,42 @@
             ];
           };
 
+        makeJailedClaudeCode =
+          {
+            name ? "jailed-claude-code",
+            pkg ? llm-agents.packages.${system}.claude-code,
+            extraPkgs ? [ ],
+            extraReadwriteDirs ? [ ],
+            extraReadonlyDirs ? [ ],
+            baseJailOptions ? commonJailOptions,
+            basePackages ? commonPkgs,
+          }:
+          makeJailedAgent {
+            inherit
+              name
+              pkg
+              extraPkgs
+              extraReadwriteDirs
+              extraReadonlyDirs
+              baseJailOptions
+              basePackages
+              ;
+            configPaths = [
+              "~/.claude"
+              "~/.claude.json"
+            ];
+          };
+
       in
       {
         lib = {
           inherit commonJailOptions;
 
           inherit makeJailedAgent;
+          inherit makeJailedClaudeCode;
           inherit makeJailedCrush;
-          inherit makeJailedOpencode;
           inherit makeJailedGeminiCli;
+          inherit makeJailedOpencode;
 
           internals = {
             inherit jail;
@@ -166,6 +193,7 @@
         };
 
         packages = {
+          jailed-claude-code = makeJailedClaudeCode { };
           jailed-crush = makeJailedCrush { };
           jailed-gemini-cli = makeJailedGeminiCli { };
           jailed-opencode = makeJailedOpencode { };

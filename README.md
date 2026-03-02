@@ -11,7 +11,7 @@ Secure Nix sandbox for LLM agents. Run AI coding agents in isolated environments
 - **Zero-Trust Sandbox**: By default, agents have no access to your home directory, SSH keys, or other sensitive files.
 - **Sensible Defaults**: Comes with a curated set of 14 common packages and secure jail options enabled out-of-the-box.
 - **Composable**: Reuse common configurations to create custom, sandboxed environments for your agents.
-- **Pre-configured Agents**: Ready-to-use jails for popular agents like `crush` and `opencode`.
+- **Pre-configured Agents**: Ready-to-use jails for popular agents like `crush`, `opencode`, and `pi`.
 - **Custom Agent Builder**: Easily create secure jails for any agent with the `makeJailedAgent` function.
 - **Declarative Tooling**: Explicitly define which commands, packages, and directories the agent can access.
 - **Seamless Nix Integration**: Works perfectly with your existing Nix Flakes setup.
@@ -83,6 +83,7 @@ Run `nix develop`, and the `jailed-opencode` command will be available in your s
 | `crush`      | `makeJailedCrush`      | `jailed-crush`      |
 | `gemini-cli` | `makeJailedGeminiCli`  | `jailed-gemini-cli` |
 | `opencode`   | `makeJailedOpencode`   | `jailed-opencode`   |
+| `pi`         | `makeJailedPi`         | `jailed-pi`         |
 
 These builders come with sensible defaults and include the necessary config paths for the agent to function correctly out of the box.
 
@@ -141,7 +142,7 @@ If an agent is not pre-configured, you can easily create a jail for it using `ma
 })
 ```
 
-> **Tip:** Prefer using the pre-configured builders (`makeJailedCrush`, `makeJailedOpencode`) when possible, as they provide simpler APIs and sensible defaults. Use `makeJailedAgent` only for unsupported agents or for full control.
+> **Tip:** Prefer using the pre-configured builders (`makeJailedCrush`, `makeJailedOpencode`, `makeJailedPi`) when possible, as they provide simpler APIs and sensible defaults. Use `makeJailedAgent` only for unsupported agents or for full control.
 
 ### Advanced Customization
 

@@ -150,6 +150,31 @@
             ];
           };
 
+        makeJailedPi =
+          {
+            name ? "jailed-pi",
+            pkg ? llm-agents.packages.${system}.pi,
+            extraPkgs ? [ ],
+            extraReadwriteDirs ? [ ],
+            extraReadonlyDirs ? [ ],
+            baseJailOptions ? commonJailOptions,
+            basePackages ? commonPkgs,
+          }:
+          makeJailedAgent {
+            inherit
+              name
+              pkg
+              extraPkgs
+              extraReadwriteDirs
+              extraReadonlyDirs
+              baseJailOptions
+              basePackages
+              ;
+            configPaths = [
+              "~/.pi"
+            ];
+          };
+
         makeJailedClaudeCode =
           {
             name ? "jailed-claude-code",
@@ -186,6 +211,7 @@
           inherit makeJailedCrush;
           inherit makeJailedGeminiCli;
           inherit makeJailedOpencode;
+          inherit makeJailedPi;
 
           internals = {
             inherit jail;
@@ -197,6 +223,7 @@
           jailed-crush = makeJailedCrush { };
           jailed-gemini-cli = makeJailedGeminiCli { };
           jailed-opencode = makeJailedOpencode { };
+          jailed-pi = makeJailedPi { };
         };
 
         devShells.default = pkgs.mkShell {

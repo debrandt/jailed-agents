@@ -50,6 +50,8 @@
           mount-cwd
         ];
 
+        customCombinators = import ./combinators jail.combinators;
+
         makeJailedAgent =
           {
             name,
@@ -61,150 +63,96 @@
             baseJailOptions ? commonJailOptions,
             basePackages ? commonPkgs,
           }:
-          jail name pkg (
-            with jail.combinators;
-            (
-              baseJailOptions
-              ++ (map (p: readwrite (noescape p)) (configPaths ++ extraReadwriteDirs))
-              ++ (map (p: readonly (noescape p)) extraReadonlyDirs)
-              ++ [ (add-pkg-deps basePackages) ]
-              ++ [ (add-pkg-deps extraPkgs) ]
-            )
-          );
+          let
+            jailedPkg = jail name pkg (
+              with jail.combinators;
+              (
+                baseJailOptions
+                ++ (map (p: readwrite (noescape p)) (configPaths ++ extraReadwriteDirs))
+                ++ (map (p: readonly (noescape p)) extraReadonlyDirs)
+                ++ [ (add-pkg-deps basePackages) ]
+                ++ [ (add-pkg-deps extraPkgs) ]
+              )
+            );
+            ensurePaths = pkgs.lib.concatMapStrings (
+              path:
+              let
+                expanded = builtins.replaceStrings [ "~" ] [ "$HOME" ] path;
+              in
+              ''
+                ensure_config_path "${expanded}"
+              ''
+            ) (configPaths ++ extraReadwriteDirs);
+          in
+          pkgs.writeShellScriptBin name ''
+            ensure_config_path() {
+              local _path="$1"
+              if [[ "$(basename "$_path")" =~ \.(json|toml|yaml|yml|conf|ini|cfg|txt)$ ]]; then
+                mkdir -p "$(dirname "$_path")"
+                [[ -e "$_path" ]] || touch "$_path"
+              else
+                mkdir -p "$_path"
+              fi
+            }
+            ${ensurePaths}
+            exec ${jailedPkg}/bin/${name} "$@"
+          '';
 
-        makeJailedCrush =
-          {
-            name ? "jailed-crush",
-            pkg ? llm-agents.packages.${system}.crush,
-            extraPkgs ? [ ],
-            extraReadwriteDirs ? [ ],
-            extraReadonlyDirs ? [ ],
-            baseJailOptions ? commonJailOptions,
-            basePackages ? commonPkgs,
-          }:
-          makeJailedAgent {
-            inherit
-              name
-              pkg
-              extraPkgs
-              extraReadwriteDirs
-              extraReadonlyDirs
-              baseJailOptions
-              basePackages
-              ;
-            configPaths = [
-              "~/.config/crush"
-              "~/.local/share/crush"
-            ];
-          };
+        makeJailedClaudeCode = import ./claude-code {
+          inherit
+            makeJailedAgent
+            llm-agents
+            system
+            commonJailOptions
+            commonPkgs
+            ;
+        };
 
-        makeJailedOpencode =
-          {
-            name ? "jailed-opencode",
-            pkg ? llm-agents.packages.${system}.opencode,
-            extraPkgs ? [ ],
-            extraReadwriteDirs ? [ ],
-            extraReadonlyDirs ? [ ],
-            baseJailOptions ? commonJailOptions,
-            basePackages ? commonPkgs,
-          }:
-          makeJailedAgent {
-            inherit
-              name
-              pkg
-              extraPkgs
-              extraReadwriteDirs
-              extraReadonlyDirs
-              baseJailOptions
-              basePackages
-              ;
-            configPaths = [
-              "~/.config/opencode"
-              "~/.local/share/opencode"
-              "~/.local/state/opencode"
-            ];
-          };
+        makeJailedCrush = import ./crush {
+          inherit
+            makeJailedAgent
+            llm-agents
+            system
+            commonJailOptions
+            commonPkgs
+            ;
+        };
 
-        makeJailedGeminiCli =
-          {
-            name ? "jailed-gemini-cli",
-            pkg ? llm-agents.packages.${system}.gemini-cli,
-            extraPkgs ? [ ],
-            extraReadwriteDirs ? [ ],
-            extraReadonlyDirs ? [ ],
-            baseJailOptions ? commonJailOptions,
-            basePackages ? commonPkgs,
-          }:
-          makeJailedAgent {
-            inherit
-              name
-              pkg
-              extraPkgs
-              extraReadwriteDirs
-              extraReadonlyDirs
-              baseJailOptions
-              basePackages
-              ;
-            configPaths = [
-              "~/.gemini"
-            ];
-          };
+        makeJailedGeminiCli = import ./gemini-cli {
+          inherit
+            makeJailedAgent
+            llm-agents
+            system
+            commonJailOptions
+            commonPkgs
+            ;
+        };
 
-        makeJailedPi =
-          {
-            name ? "jailed-pi",
-            pkg ? llm-agents.packages.${system}.pi,
-            extraPkgs ? [ ],
-            extraReadwriteDirs ? [ ],
-            extraReadonlyDirs ? [ ],
-            baseJailOptions ? commonJailOptions,
-            basePackages ? commonPkgs,
-          }:
-          makeJailedAgent {
-            inherit
-              name
-              pkg
-              extraPkgs
-              extraReadwriteDirs
-              extraReadonlyDirs
-              baseJailOptions
-              basePackages
-              ;
-            configPaths = [
-              "~/.pi"
-            ];
-          };
+        makeJailedOpencode = import ./opencode {
+          inherit
+            makeJailedAgent
+            llm-agents
+            system
+            commonJailOptions
+            commonPkgs
+            ;
+        };
 
-        makeJailedClaudeCode =
-          {
-            name ? "jailed-claude-code",
-            pkg ? llm-agents.packages.${system}.claude-code,
-            extraPkgs ? [ ],
-            extraReadwriteDirs ? [ ],
-            extraReadonlyDirs ? [ ],
-            baseJailOptions ? commonJailOptions,
-            basePackages ? commonPkgs,
-          }:
-          makeJailedAgent {
-            inherit
-              name
-              pkg
-              extraPkgs
-              extraReadwriteDirs
-              extraReadonlyDirs
-              baseJailOptions
-              basePackages
-              ;
-            configPaths = [
-              "~/.claude"
-              "~/.claude.json"
-            ];
-          };
+        makeJailedPi = import ./pi {
+          inherit
+            makeJailedAgent
+            llm-agents
+            system
+            commonJailOptions
+            commonPkgs
+            ;
+        };
 
       in
       {
         lib = {
           inherit commonJailOptions;
+          inherit customCombinators;
 
           inherit makeJailedAgent;
           inherit makeJailedClaudeCode;
